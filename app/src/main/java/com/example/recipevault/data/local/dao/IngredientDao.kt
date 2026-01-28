@@ -13,8 +13,14 @@ interface IngredientDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertIngredient(ingredient: IngredientEntity): Long
 
+    @Update
+    suspend fun updateIngredient(ingredient: IngredientEntity)
+
     @Delete
     suspend fun deleteIngredient(ingredient: IngredientEntity)
+
+    @Query("DELETE FROM ingredients WHERE id = :id")
+    suspend fun deleteById(id: Long)
 
     @Query("DELETE FROM ingredients WHERE recipeId = :recipeId")
     suspend fun deleteAllForRecipe(recipeId: Long)

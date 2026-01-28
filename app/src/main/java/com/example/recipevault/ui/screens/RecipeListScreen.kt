@@ -4,44 +4,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.recipevault.data.local.entity.RecipeEntity
 import com.example.recipevault.ui.viewmodel.RecipeViewModel
 
 @Composable
-fun RecipeListScreen(vm: RecipeViewModel) {
+fun RecipeListScreen(
+    vm: RecipeViewModel,
+    onOpenRecipe: (Long) -> Unit,
+    onAdd: () -> Unit
+) {
     val recipes = vm.recipes.collectAsState().value
-
-    var showForm by remember { mutableStateOf(false) }
-    var editing by remember { mutableStateOf<RecipeEntity?>(null) }
-
-    if (showForm) {
-        RecipeFormScreen(
-            vm = vm,
-            editing = editing,
-            onBack = {
-                showForm = false
-                editing = null
-            }
-        )
-        return
-    }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    editing = null
-                    showForm = true
-                }
-            ) { Text("+") }
+            FloatingActionButton(onClick = onAdd) { Text("+") }
         }
     ) { padding ->
         Column(
@@ -51,36 +31,25 @@ fun RecipeListScreen(vm: RecipeViewModel) {
                 .fillMaxSize()
         ) {
             Text("Recepti", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
+
+            if (recipes.isEmpty()) {
+                Text("Nema recepata. Klikni + da dodaš prvi.")
+                return@Column
+            }
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(recipes, key = { it.id }) { r ->
+                items(recipes) { r ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                editing = r
-                                showForm = true
-                            }
+                            .clickable { onOpenRecipe(r.id) }
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(r.title, style = MaterialTheme.typography.titleMedium)
-                                if (r.category.isNotBlank()) {
-                                    Text(r.category, style = MaterialTheme.typography.bodySmall)
-                                }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(r.description, maxLines = 2)
-                            }
-
-                            IconButton(onClick = { vm.deleteRecipe(r) }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Obriši")
-                            }
+                        Column(Modifier.padding(12.dp)) {
+                            Text(r.title, style = MaterialTheme.typography.titleMedium)
+                            if (r.category.isNotBlank()) Text(r.category, style = MaterialTheme.typography.bodySmall)
+                            Spacer(Modifier.height(6.dp))
+                            Text(r.description, maxLines = 2)
                         }
                     }
                 }
