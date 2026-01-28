@@ -1,4 +1,7 @@
 package com.example.recipevault
 
-class RecipeVaultApp {
-}
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
+
+@HiltAndroidApp
+class RecipeVaultApp : Application()
